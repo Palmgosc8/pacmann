@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeu de collecte</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    canvas {
+      background: #222;
+      display: block;
+      margin: 20px auto;
+      border: 2px solid white;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Pac-man</h1>
+<p>Utilise les flèches du clavier pour te déplacer</p>
+<p>Score : <span id="score">0</span></p>
+
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// joueur
+const player = {
+  x: 50,
+  y: 50,
+  size: 30,
+  speed: 4
+};
+
+// objet à collecter
+const item = {
+  x: 200,
+  y: 200,
+  radius: 10
+};
+
+let score = 0;
+const keys = {};
+
+// gestion clavier
+window.addEventListener("keydown", (e) => {
+  keys[e.key] = true;
+});
+
+window.addEventListener("keyup", (e) => {
+  keys[e.key] = false;
+});
+
+// position aléatoire de l'objet
+function randomizeItem() {
+  item.x = Math.random() * (canvas.width - item.radius * 2) + item.radius;
+  item.y = Math.random() * (canvas.height - item.radius * 2) + item.radius;
+}
+
+// collision joueur / objet
+function checkCollision() {
+  const dx = player.x + player.size / 2 - item.x;
+  const dy = player.y + player.size / 2 - item.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  if (distance < player.size / 2 + item.radius) {
+    score++;
+    document.getElementById("score").textContent = score;
+    randomizeItem();
+  }
+}
+
+// mise à jour du jeu
+function update() {
+  if (keys["ArrowUp"]) player.y -= player.speed;
+  if (keys["ArrowDown"]) player.y += player.speed;
+  if (keys["ArrowLeft"]) player.x -= player.speed;
+  if (keys["ArrowRight"]) player.x += player.speed;
+
+  // empêcher de sortir du canvas
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+
+  checkCollision();
+}
+
+// dessin
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // joueur
+  ctx.fillStyle = "dodgerblue";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // objet
+  ctx.beginPath();
+  ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+  ctx.fillStyle = "lime";
+  ctx.fill();
+}
+
+// boucle principale
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+randomizeItem();
+gameLoop();
+</script>
+
+</body>
+</html>
